@@ -31,7 +31,8 @@ import {
   
     @Get()
     getAllProducts() {
-      return this.categoriesService.getProducts();
+        console.log('hi')
+      return this.categoriesService.getCategories();
     }
   
     @Get(':id')

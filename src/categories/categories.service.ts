@@ -19,7 +19,7 @@ export class CategoriesService {
     return result._id as string;
   }
 
-  async getProducts() {
+  async getCategories() {
     const products = await this.categoryModel.find().exec();
     return products.map(category => ({
       id: category.id,

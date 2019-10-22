@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
@@ -7,27 +7,12 @@ import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-
-const useStyles = makeStyles(theme => ({
-  modal: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: theme.shadows[2],
-    padding: theme.spacing(2, 4, 3),
-  },
-  fab: {
-    margin: theme.spacing(1),
-  },
-  form: {
-    maxWidth: 400,
-    // width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-}));
+import FormControl from '@material-ui/core/FormControl';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import useStyles from './ProductInputStyles';
+import axios from 'axios';
 
 export default function AddProduct(props) {
   const classes = useStyles();
@@ -35,7 +20,24 @@ export default function AddProduct(props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState('');
+
+  useEffect(() => {
+    axios({
+      method: 'get',
+      url: `http://localhost:4000/categories`,
+      //data: { username: user, password: pass },
+      crossDomain: true,
+    })
+      .then(function(response) {
+        setCategories(response.data);
+        console.log(response.data);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  }, []);
 
   const handleOpen = () => {
     props.setOpen(true);
@@ -59,7 +61,6 @@ export default function AddProduct(props) {
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
         className={classes.modal}
-        style={{}}
         open={props.open}
         onClose={handleClose}
         closeAfterTransition
@@ -72,7 +73,7 @@ export default function AddProduct(props) {
           <div className={classes.paper}>
             <h2 id="transition-modal-title">Add a product</h2>
 
-            <form className={classes.form} validate>
+            <form className={classes.form}>
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -83,9 +84,27 @@ export default function AddProduct(props) {
                 name="title"
                 autoComplete="title"
                 autoFocus
-                //  value={title}
-                //  onChange={e => setTitle(e.target.value)}
+                value={title}
+                onChange={e => setTitle(e.target.value)}
               />
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="age-simple">Category</InputLabel>
+                <Select
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  // inputProps={{
+                  //   name: 'age',
+                  //   id: 'age-simple',
+                  // }}
+                >
+                  {categories.map(category => (
+                    <MenuItem key={category.id} value={category.type}>{category.type}</MenuItem>
+                  ))}
+                  {/* <MenuItem value={10}>Ten</MenuItem>
+                  <MenuItem value={20}>Twenty</MenuItem>
+                  <MenuItem value={30}>Thirty</MenuItem> */}
+                </Select>
+              </FormControl>
               <TextField
                 variant="outlined"
                 margin="normal"
