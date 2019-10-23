@@ -23,6 +23,9 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(1),
     minWidth: 200,
   },
+  button: {
+    margin: theme.spacing(1),
+  },
 }));
 
 export default useStyles;

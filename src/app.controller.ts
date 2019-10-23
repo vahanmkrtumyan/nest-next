@@ -9,6 +9,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth/auth.service';
 import { UsersService } from './users/users.service';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {

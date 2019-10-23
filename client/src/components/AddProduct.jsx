@@ -7,6 +7,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -22,6 +23,7 @@ export default function AddProduct(props) {
   const [price, setPrice] = useState('');
   const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState('');
+  const [file, setFile] = useState('');
 
   useEffect(() => {
     axios({
@@ -39,6 +41,46 @@ export default function AddProduct(props) {
       });
   }, []);
 
+  let handleSubmit = e => {
+    e.preventDefault();
+
+    let token = localStorage.getItem('token');
+
+    let body = {
+      title,
+      description,
+      price,
+      category,
+    };
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('title', title);
+    fd.append('description', description);
+    fd.append('price', price);
+    fd.append('category', category);
+
+    console.log(fd)
+
+    axios
+      .post(
+        `http://localhost:4000/products`,
+        fd,
+        {
+          headers: {
+            Authorization: `bearer ${token}`,
+          },
+        },
+        // crossDomain: true,
+      )
+      .then(function(response) {
+        console.log(response.data);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  };
+
   const handleOpen = () => {
     props.setOpen(true);
   };
@@ -46,6 +88,9 @@ export default function AddProduct(props) {
   const handleClose = () => {
     props.setOpen(false);
   };
+
+  let disabled = false;
+  if (!title || !description || !price || !category) disabled = true;
 
   return (
     <div>
@@ -92,17 +137,12 @@ export default function AddProduct(props) {
                 <Select
                   value={category}
                   onChange={e => setCategory(e.target.value)}
-                  // inputProps={{
-                  //   name: 'age',
-                  //   id: 'age-simple',
-                  // }}
                 >
                   {categories.map(category => (
-                    <MenuItem key={category.id} value={category.type}>{category.type}</MenuItem>
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.type}
+                    </MenuItem>
                   ))}
-                  {/* <MenuItem value={10}>Ten</MenuItem>
-                  <MenuItem value={20}>Twenty</MenuItem>
-                  <MenuItem value={30}>Thirty</MenuItem> */}
                 </Select>
               </FormControl>
               <TextField
@@ -114,29 +154,38 @@ export default function AddProduct(props) {
                 label="Price"
                 type="price"
                 id="price"
-                // value={password}
-                //  onChange={e => setPassWord(e.target.value)}
+                value={price}
+                type="number"
+                onChange={e => setPrice(e.target.value)}
               />
               <TextField
                 variant="outlined"
                 margin="normal"
                 required
                 fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                // value={password}
-                //  onChange={e => setPassWord(e.target.value)}
+                name="description"
+                label="Description"
+                type="description"
+                id="description"
+                autoComplete="current-description"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
               />
+              upload a photo{' '}
+              <input
+                onChange={e => setFile(e.target.files[0])}
+                type="file"
+                name="pic"
+                accept="image/*"
+              ></input>
               <Button
+                disabled={disabled}
                 type="submit"
                 fullWidth
                 variant="contained"
                 color="primary"
                 className={classes.submit}
-                //  onClick={handleSubmit}
+                onClick={handleSubmit}
               >
                 Add a product
               </Button>

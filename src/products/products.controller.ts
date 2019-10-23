@@ -7,7 +7,10 @@ import {
   Patch,
   Delete,
   UseGuards,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 
 import { ProductsService } from './products.service';
@@ -18,17 +21,20 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
+  @UseInterceptors(FilesInterceptor('image'))
   async addProduct(
+    @UploadedFiles() file: any,
     @Body('title') prodTitle: string,
     @Body('description') prodDesc: string,
     @Body('price') prodPrice: number,
     @Body('category') prodCategory: string,
   ) {
     const generatedId = await this.productsService.insertProduct(
+      file,
       prodTitle,
       prodDesc,
       prodPrice,
-      prodCategory
+      prodCategory,
     );
     return { id: generatedId };
   }
@@ -57,7 +63,7 @@ export class ProductsController {
       prodTitle,
       prodDesc,
       prodPrice,
-      prodCategory
+      prodCategory,
     );
     return null;
   }

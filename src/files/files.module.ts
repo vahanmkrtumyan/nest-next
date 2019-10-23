@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 
-import { ProductsController } from './products.controller';
-import { ProductsService } from './products.service';
-import { ProductSchema } from './product.model';
+import { FileController } from './files.controller';
+import { FileService } from './files.service';
+import { FileSchema } from './files.model';
 
 const multer = require('multer')
 
@@ -19,12 +19,13 @@ const storage = multer.diskStorage({
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Product', schema: ProductSchema }]),
+    MongooseModule.forFeature([{ name: 'File', schema: FileSchema }]),
     MulterModule.register({
       storage: storage
+      // dest: './files',
     })
   ],
-  controllers: [ProductsController],
-  providers: [ProductsService],
+  controllers: [FileController],
+  providers: [FileService],
 })
-export class ProductsModule {}
+export class FileModule {}
