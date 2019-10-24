@@ -29,14 +29,14 @@ export class ProductsController {
     @Body('price') prodPrice: number,
     @Body('category') prodCategory: string,
   ) {
-    const generatedId = await this.productsService.insertProduct(
+    const generatedProduct = await this.productsService.insertProduct(
       file,
       prodTitle,
       prodDesc,
       prodPrice,
       prodCategory,
     );
-    return { id: generatedId };
+    return generatedProduct;
   }
 
   @Get()

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
@@ -25,60 +24,104 @@ export default function AddProduct(props) {
   const [category, setCategory] = useState('');
   const [file, setFile] = useState('');
 
+  const inputRef = useRef();
+
   useEffect(() => {
     axios({
       method: 'get',
       url: `http://localhost:4000/categories`,
-      //data: { username: user, password: pass },
       crossDomain: true,
     })
       .then(function(response) {
         setCategories(response.data);
-        console.log(response.data);
       })
       .catch(function(error) {
         console.log(error);
       });
   }, []);
 
+  useEffect(() => {
+    setTitle(props.selected.title);
+    setCategory(props.selected.category ? props.selected.category._id : '');
+    setPrice(props.selected.price);
+    setDescription(props.selected.description);
+    setId(props.selected.id);
+    setFile(props.selected.file);
+  }, [props.selected.id]);
+
   let handleSubmit = e => {
     e.preventDefault();
 
     let token = localStorage.getItem('token');
 
-    let body = {
-      title,
-      description,
-      price,
-      category,
-    };
+    if (props.selected.id) {
+      // const fd = new FormData();
+      // fd.append('title', title);
+      // fd.append('description', description);
+      // fd.append('price', price);
+      // fd.append('category', category);
+      let newProduct = {
+        title,
+        description,
+        price,
+        category,
+      };
 
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('title', title);
-    fd.append('description', description);
-    fd.append('price', price);
-    fd.append('category', category);
-
-    console.log(fd)
-
-    axios
-      .post(
-        `http://localhost:4000/products`,
-        fd,
-        {
+      axios
+        .patch(`http://localhost:4000/products/${id}`, newProduct, {
           headers: {
             Authorization: `bearer ${token}`,
           },
-        },
-        // crossDomain: true,
-      )
-      .then(function(response) {
-        console.log(response.data);
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
+        })
+        .then(function(response) {
+          console.log(response.data);
+          let newProduct = {
+            id,
+            file,
+            title,
+            description,
+            price,
+            category,
+          };
+          props.handleEdit(newProduct);
+          handleClose();
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    } else {
+      let handleAd = p => {
+        props.handleAdd(p);
+      };
+
+      const fd = new FormData();
+      fd.append('image', file);
+      fd.append('title', title);
+      fd.append('description', description);
+      fd.append('price', price);
+      fd.append('category', category);
+
+      axios
+        .post(`http://localhost:4000/products`, fd, {
+          headers: {
+            Authorization: `bearer ${token}`,
+          },
+          onUploadProgress: ProgressEvent => {
+            console.log(
+              'Upload Progress:' +
+                Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100) +
+                '%',
+            );
+          },
+        })
+        .then(function(response) {
+          handleAd(response);
+          handleClose();
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    }
   };
 
   const handleOpen = () => {
@@ -87,10 +130,11 @@ export default function AddProduct(props) {
 
   const handleClose = () => {
     props.setOpen(false);
+    props.handleSelected({});
   };
 
   let disabled = false;
-  if (!title || !description || !price || !category) disabled = true;
+  if (!title || !description || !price || !category || !file) disabled = true;
 
   return (
     <div>
@@ -152,7 +196,6 @@ export default function AddProduct(props) {
                 fullWidth
                 name="price"
                 label="Price"
-                type="price"
                 id="price"
                 value={price}
                 type="number"
@@ -171,13 +214,28 @@ export default function AddProduct(props) {
                 value={description}
                 onChange={e => setDescription(e.target.value)}
               />
-              upload a photo{' '}
-              <input
-                onChange={e => setFile(e.target.files[0])}
-                type="file"
-                name="pic"
-                accept="image/*"
-              ></input>
+              {!props.selected.id ? (
+                <>
+                  <p>upload a photo</p>
+                  <input
+                    onChange={e => setFile(e.target.files[0])}
+                    type="file"
+                    name="pic"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    ref={inputRef}
+                  ></input>
+                  <Button
+                    variant="contained"
+                    color="default"
+                    className={classes.button}
+                    onClick={() => inputRef.current.click()}
+                  >
+                    <CloudUploadIcon />
+                  </Button>
+                </>
+              ) : null}
+
               <Button
                 disabled={disabled}
                 type="submit"
@@ -187,7 +245,7 @@ export default function AddProduct(props) {
                 className={classes.submit}
                 onClick={handleSubmit}
               >
-                Add a product
+                {props.selected.id ? 'Edit a product' : 'Add a product'}
               </Button>
             </form>
           </div>

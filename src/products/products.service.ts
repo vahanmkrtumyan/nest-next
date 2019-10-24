@@ -22,7 +22,7 @@ export class ProductsService {
     price: number,
     category: string,
   ) {
-    console.log(file[0], 'asddsss');
+    console.log(file[0]);
 
     const newProduct = new this.productModel({
       file: file[0].filename,
@@ -32,7 +32,7 @@ export class ProductsService {
       category,
     });
     const result = await newProduct.save();
-    return result._id as string;
+    return result;
   }
 
   async getProducts() {
@@ -85,6 +85,7 @@ export class ProductsService {
   }
 
   async deleteProduct(prodId: string) {
+    console.log(prodId)
     const product = await this.findProduct(prodId);
     try {
       fs.unlinkSync(`files/${product.file}`);
