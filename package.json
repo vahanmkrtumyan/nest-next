@@ -6,6 +6,8 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"", 
     "server": "nodemon server.js",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
